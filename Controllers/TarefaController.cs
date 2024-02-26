@@ -42,7 +42,7 @@ namespace TrilhaApiDesafio.Controllers
                 var tarefas = _context.Tarefas;
                 return Ok(tarefas);
             }
-            catch
+            catch(Exception ex)
             {
                 return StatusCode(500);
             }
@@ -67,9 +67,8 @@ namespace TrilhaApiDesafio.Controllers
             catch(Exception ex)
             {
                 if (ex is InvalidOperationException || ex is NullReferenceException)
-                {
                     return StatusCode(404);
-                }
+                
                 return StatusCode(500);
             }
             
@@ -96,13 +95,21 @@ namespace TrilhaApiDesafio.Controllers
         [HttpPost]
         public IActionResult Criar(Tarefa tarefa)
         {
-            if (tarefa.Data == DateTime.MinValue)
-                return BadRequest(new { Erro = "A data da tarefa não pode ser vazia" });
+            try
+            {
+                if (tarefa.Data == DateTime.MinValue)
+                    return BadRequest(new { Erro = "A data da tarefa não pode ser vazia" });
 
-            _context.Add(tarefa);
-            _context.SaveChanges();
+                _context.Add(tarefa);
+                _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = tarefa.Id }, tarefa);
+                return CreatedAtAction(nameof(GetById), new { id = tarefa.Id }, tarefa);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }   
+            
         }
 
         [HttpPut("{id}")]
@@ -135,7 +142,7 @@ namespace TrilhaApiDesafio.Controllers
                 var tarefaBanco = _context.Tarefas.Find(id);
 
                 if (tarefaBanco == null)
-                return NotFound();
+                    return NotFound();
 
                 _context.Tarefas.Remove(tarefaBanco);
                 _context.SaveChanges();
